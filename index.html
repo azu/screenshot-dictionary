@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>入力フォーム</title>
+    <link rel="stylesheet" href="node_modules/purecss/build/pure-min.css">
+    <style>
+        body {
+            width: 100%;
+        }
+
+        .main {
+            width: 90%;
+            margin: 10%;
+        }
+
+        .user-input {
+            width: 20em;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <span id="js-placeholder"></span>
+
+    <form id="js-form" class="pure-form pure-form-stacked">
+        <fieldset>
+            <label id="js-label" for="js-input"></label>
+            <input class="user-input" id="js-input"/>
+        </fieldset>
+    </form>
+</div>
+<script>
+    var ipc = require('ipc');
+    var form = document.getElementById("js-form");
+    var input = document.getElementById("js-input");
+    input.focus();
+    form.addEventListener("submit", function (event) {
+        var value = input.value;
+        // 同期
+        ipc.sendSync('synchronous-message', value);
+        event.preventDefault();
+    });
+    ipc.on("form-label", function (value) {
+        document.getElementById("js-label").textContent = value;
+    });
+
+</script>
+</body>
+</html>
