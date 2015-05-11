@@ -24,22 +24,28 @@ function saveUserDict(userDict) {
     dictList.push(userDict);
     fs.writeFileSync(userDict.dictFilePath, JSON.stringify(dictList, null, 4));
 }
-function launchApp() {
+function launchRegisterView() {
     var mainWindow = new BrowserWindow({width: 400, height: 400});
     mainWindow.loadUrl('file://' + __dirname + '/index.html');
     mainWindow.webContents.on('did-finish-load', function () {
         mainWindow.webContents.send("form-label", "En: " + userDict.en);
     });
-    ipc.on('synchronous-message', function (event, arg) {
+    var isFinishInput = false;
+    ipc.on('finish-input', function (event, arg) {
         if (arg.length === 0) {
             return;
         }
         console.log(arg);
         userDict.output = arg;
         saveUserDict(userDict);
+        isFinishInput = true;
         mainWindow.close();
     });
     mainWindow.on('closed', function () {
+        if (!isFinishInput) {
+            var fs = require("fs-extra");
+            fs.removeSync(userDict.imageFilePath);
+        }
         mainWindow = null;
         app.quit();
     });
@@ -52,5 +58,5 @@ app.on('window-all-closed', function () {
 
 app.on('ready', function () {
     Command('screencapture -l $(./GetForegroundWindowID) ' + userDict.imageFilePath)
-        .then(launchApp, console.error);
+        .then(launchRegisterView, console.error);
 });

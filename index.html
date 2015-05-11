@@ -38,7 +38,7 @@
     form.addEventListener("submit", function (event) {
         var value = input.value;
         // 同期
-        ipc.sendSync('synchronous-message', value);
+        ipc.sendSync('finish-input', value);
         event.preventDefault();
     });
     ipc.on("form-label", function (value) {
