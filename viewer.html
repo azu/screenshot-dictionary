@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="node_modules/vue/dist/vue.js"></script>
+    <style>
+        .DictList .input-output {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+<div id="js-dict" class="DictList">
+    <h1>{{title}}</h1>
+    <ul>
+        <li v-repeat="dictList">
+            <p class="input-output">
+                <ruby>
+                    {{input}}
+                    <rt>{{output}}</rt>
+                </ruby>
+                <br>
+            </p>
+            <div>
+                <a href="{{imageFilePath}}"><img width="320px" src="{{imageFilePath}}"/></a>
+            </div>
+        </li>
+    </ul>
+</div>
+<script>
+    var demo = new Vue({
+        el: '#js-dict',
+        data: {
+            title: '辞書',
+            dictList: require("./user-data/dict.json")
+        }
+    });
+</script>
+</body>
+</html>

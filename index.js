@@ -6,10 +6,7 @@ var BrowserWindow = require('browser-window');
 var Command = require("command-promise");
 var ipc = require('ipc');
 var UserDict = require("./lib/UserDict");
-if (process.argv[2] == null) {
-    console.error("arg[2] is undefined");
-    app.quit();
-}
+
 const userDir = __dirname + "/user-data/";
 var userDict = new UserDict(userDir);
 userDict.input = process.argv[2];
@@ -28,7 +25,7 @@ function launchRegisterView() {
     var mainWindow = new BrowserWindow({width: 400, height: 400});
     mainWindow.loadUrl('file://' + __dirname + '/index.html');
     mainWindow.webContents.on('did-finish-load', function () {
-        mainWindow.webContents.send("form-label", "En: " + userDict.en);
+        mainWindow.webContents.send("form-label", "En: " + userDict.input);
     });
     var isFinishInput = false;
     ipc.on('finish-input', function (event, arg) {
@@ -56,7 +53,19 @@ app.on('window-all-closed', function () {
     }
 });
 
+var launchViewer = function () {
+    var mainWindow = new BrowserWindow({width: 400, height: 400});
+    mainWindow.loadUrl('file://' + __dirname + '/viewer.html');
+    mainWindow.on('closed', function () {
+        mainWindow = null;
+        app.quit();
+    });
+};
 app.on('ready', function () {
-    Command('screencapture -l $(./GetForegroundWindowID) ' + userDict.imageFilePath)
-        .then(launchRegisterView, console.error);
+    if (process.argv[2] == null) {
+        launchViewer();
+    } else {
+        Command('screencapture -l $(./GetForegroundWindowID) ' + userDict.imageFilePath)
+            .then(launchRegisterView, console.error);
+    }
 });
