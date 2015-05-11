@@ -1,29 +1,31 @@
 // LICENSE : MIT
 "use strict";
+require("babel/register")();
 var app = require('app');
 var BrowserWindow = require('browser-window');
 var Command = require("command-promise");
 var ipc = require('ipc');
-var mainWindow = null;
+var UserDict = require("./lib/UserDict");
 if (process.argv[2] == null) {
     console.error("arg[2] is undefined");
     app.quit();
 }
-var userDict = {
-    date: (new Date()).toISOString(),
-    en: process.argv[2],
-    imageFilePath: ""
-};
+const userDir = __dirname + "/user-data/";
+var userDict = new UserDict(userDir);
+userDict.input = process.argv[2];
 
-function saveUserDict(dict) {
-    require("assert")(dict.date && dict.en && dict.ja);
+function saveUserDict(userDict) {
     var fs = require("fs");
-    var obj = require('./dict.json');
-    obj.push(dict);
-    fs.writeFileSync('dict.json', JSON.stringify(obj, null, 4));
+    var dictList = [];
+    try {
+        dictList = require(userDict.dictFilePath);
+    } catch (e) {
+    }
+    dictList.push(userDict);
+    fs.writeFileSync(userDict.dictFilePath, JSON.stringify(dictList, null, 4));
 }
 function launchApp() {
-    mainWindow = new BrowserWindow({width: 400, height: 400});
+    var mainWindow = new BrowserWindow({width: 400, height: 400});
     mainWindow.loadUrl('file://' + __dirname + '/index.html');
     mainWindow.webContents.on('did-finish-load', function () {
         mainWindow.webContents.send("form-label", "En: " + userDict.en);
@@ -33,7 +35,7 @@ function launchApp() {
             return;
         }
         console.log(arg);
-        userDict.ja = arg;
+        userDict.output = arg;
         saveUserDict(userDict);
         mainWindow.close();
     });
@@ -49,10 +51,6 @@ app.on('window-all-closed', function () {
 });
 
 app.on('ready', function () {
-    var path = require("path");
-    var utc = (new Date()).toISOString();
-    var imageFilePath = path.join(process.cwd(), utc + ".png");
-    userDict.imageFilePath = imageFilePath;
-    Command('screencapture -l $(./GetForegroundWindowID) ' + imageFilePath)
+    Command('screencapture -l $(./GetForegroundWindowID) ' + userDict.imageFilePath)
         .then(launchApp, console.error);
 });
