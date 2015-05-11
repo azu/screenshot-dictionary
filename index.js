@@ -6,8 +6,11 @@ var BrowserWindow = require('browser-window');
 var Command = require("command-promise");
 var ipc = require('ipc');
 var UserDict = require("./lib/UserDict");
-
-const userDir = __dirname + "/user-data/";
+var path = require("path");
+function getUserHome() {
+    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+const userDir = path.join(getUserHome(), "Dropbox", "Memo", "dictionary");
 var userDict = new UserDict(userDir);
 userDict.input = process.argv[2];
 
